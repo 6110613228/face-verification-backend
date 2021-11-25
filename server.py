@@ -29,7 +29,8 @@ async def main():
 
 @app.websocket("/ws/{option}")
 async def websocket_endpoint(websocket: WebSocket):
-    count = 0
+    model = models['wave']
+
     await websocket.accept()
     while True:
         try:
@@ -40,17 +41,20 @@ async def websocket_endpoint(websocket: WebSocket):
             image = cv.imdecode(nparr, 1)
 
             faces_bb = face_utils.detect_face(image)
-            results = face_utils.crop_face(image, faces_bb)
+            cropped_images = face_utils.crop_face(image, faces_bb)
 
-            model = models['wave']
-
+            if (len(cropped_images) == 2):
+                result = model.face_verification(cropped_images)
+            else:
+                result = False
             #img_str = cv.imencode('.png', image)[1].tobytes()
 
             await websocket.send_json({
                 'message': 'test',
                 'face_is_found': True,
-                'count_face': 0,
-                'found_faces_bb': faces_bb
+                'count_face': len(cropped_images),
+                'found_faces_bb': faces_bb,
+                'is_same_person': result
             })
 
         except WebSocketDisconnect:
