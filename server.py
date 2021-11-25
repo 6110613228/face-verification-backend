@@ -5,7 +5,7 @@ import cv2 as cv
 import numpy as np
 
 from feature_utils import face_utils
-from Models.Model_Controller import models
+from MLs.Model_Controller import models
 
 app = FastAPI()
 
@@ -42,8 +42,6 @@ async def websocket_endpoint(websocket: WebSocket):
             faces_bb = face_utils.detect_face(image)
             results = face_utils.crop_face(image, faces_bb)
 
-            for i, f in enumerate(results):
-                cv.imwrite('image' + str(i) + '.png', f)
             model = models['wave']
 
             #img_str = cv.imencode('.png', image)[1].tobytes()
