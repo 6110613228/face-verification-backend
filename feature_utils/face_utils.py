@@ -17,7 +17,6 @@ def detect_face(image):
     resize_image = cv.resize(image, (int(
         image_width/downsize), int(image_height/downsize)), interpolation=cv.INTER_AREA)
 
-
     result = face_detector.detect_faces(resize_image)
 
     for face in result:
@@ -27,6 +26,7 @@ def detect_face(image):
         face['box'] = [x * 2 for x in face['box']]
 
     return result
+
 
 def crop_face(image, bounding_box):
     """
@@ -42,6 +42,7 @@ def crop_face(image, bounding_box):
         cropped_faces.append(image[y:y + height, x:x + width])
 
     return cropped_faces
+
 
 class load_mtcnn():
     mtcnn = MTCNN()
