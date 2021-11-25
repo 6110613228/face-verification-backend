@@ -1,6 +1,12 @@
 # venv
 .venv
 
+# database
+database
+
+# facemodel
+face_model
+
 .idea
 .ipynb_checkpoints
 .mypy_cache
