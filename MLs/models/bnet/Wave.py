@@ -1,8 +1,79 @@
 from MLs.models.Model import Skel
+import tensorflow as tf
+
+import os
+import numpy as np
+import cv2 as cv
+
+from tensorflow_similarity.losses import CircleLoss
+
+CUR_DIR = os.getcwd()
 
 
 class Wave(Skel):
 
-    def predict(self, image):
-        print(self.test())
-        print('crop')
+    def face_verification(self, image):
+
+        model = load_model.model
+
+        class_names = self.get_classes_name(CUR_DIR+"MLs/models/bnet/database")
+        class_names.append("Unknown")
+
+        image[0] = cv.resize(image[0], (224, 224), interpolation = cv.INTER_AREA)
+        image[1] = cv.resize(image[1], (224, 224), interpolation = cv.INTER_AREA)
+
+        label1 = self.find_face(model, class_names, image[0])
+        label2 = self.find_face(model, class_names, image[1])
+
+        if (label1 == label2) and ((label1 != class_names[-1]) or (label2 != class_names[-1])):
+            return True
+        else:
+            return False
+
+    def face_registration():
+        pass
+
+    def get_classes_name(path):
+        for i, y in enumerate(os.walk(path)):
+            subdirs, dirs, files = y
+            if i == 0:
+                return dirs
+
+    def split_xy(data_set):
+        # loop batch
+        images = list()
+        labels = list()
+        for img_batch, label_batch in data_set:
+            for i in range(len(img_batch)):
+                images.append(img_batch[i].numpy().astype("uint8"))
+                labels.append(label_batch[i].numpy().astype("uint8"))
+        images = np.array(images)
+        labels = np.array(labels)
+        return images.squeeze(), labels.reshape(-1)
+
+    def find_face(model, classes, face, th=0.0982):
+        found = model.single_lookup(face, k=1)
+        # Find Nearest with distance threshold
+        if found[0].distance < th:
+            return classes[found[0].label]
+        else:
+            return classes[len(classes) - 1]
+
+
+class load_model():
+    model = tf.keras.models.load_model(
+        "MLs/models/bnet/face_model",custom_objects={'circle_loss_fixed': CircleLoss()})
+    # Model
+    index_ds = tf.keras.preprocessing.image_dataset_from_directory(
+        CUR_DIR+"/MLs/models/bnet/database",
+        shuffle=True,
+        labels='inferred',
+        label_mode='int',
+        image_size=(224, 224),
+        color_mode='rgb',
+        batch_size=1)
+
+    x_index, y_index = Wave.split_xy(index_ds)
+
+    model.reset_index()
+    model.index(x_index, y_index, data=x_index)
