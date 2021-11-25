@@ -4,7 +4,7 @@ import cv2 as cv
 
 def detect_face(image):
     """
-    @input openCV image object
+    @param image openCV image object
     @return array of 'dictionary' of found face(s) inside image with key 'box' : (x, y, width, height)
     """
     face_detector = load_mtcnn.mtcnn
@@ -30,7 +30,9 @@ def detect_face(image):
 
 def crop_face(image, bounding_box):
     """
-    @input 'image' and 'array' of bounding box of faces inside image
+    @param image openCV image object
+    @param bounding_box array of bounding box of faces inside image
+
     @return array of cropped image
     """
     cropped_faces = []
