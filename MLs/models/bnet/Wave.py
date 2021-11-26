@@ -16,7 +16,7 @@ class Wave(Skel):
 
         model = load_model.model
 
-        class_names = self.get_classes_name(CUR_DIR+"MLs/models/bnet/database")
+        class_names = self.get_classes_name(CUR_DIR+"/MLs/models/bnet/database")
         class_names.append("Unknown")
 
         image[0] = cv.resize(image[0], (224, 224), interpolation = cv.INTER_AREA)
@@ -33,25 +33,13 @@ class Wave(Skel):
     def face_registration():
         pass
 
-    def get_classes_name(path):
+    def get_classes_name(self, path):
         for i, y in enumerate(os.walk(path)):
             subdirs, dirs, files = y
             if i == 0:
                 return dirs
 
-    def split_xy(data_set):
-        # loop batch
-        images = list()
-        labels = list()
-        for img_batch, label_batch in data_set:
-            for i in range(len(img_batch)):
-                images.append(img_batch[i].numpy().astype("uint8"))
-                labels.append(label_batch[i].numpy().astype("uint8"))
-        images = np.array(images)
-        labels = np.array(labels)
-        return images.squeeze(), labels.reshape(-1)
-
-    def find_face(model, classes, face, th=0.0982):
+    def find_face(self, model, classes, face, th=0.0982):
         found = model.single_lookup(face, k=1)
         # Find Nearest with distance threshold
         if found[0].distance < th:
@@ -62,18 +50,6 @@ class Wave(Skel):
 
 class load_model():
     model = tf.keras.models.load_model(
-        "MLs/models/bnet/face_model",custom_objects={'circle_loss_fixed': CircleLoss()})
-    # Model
-    index_ds = tf.keras.preprocessing.image_dataset_from_directory(
-        CUR_DIR+"/MLs/models/bnet/database",
-        shuffle=True,
-        labels='inferred',
-        label_mode='int',
-        image_size=(224, 224),
-        color_mode='rgb',
-        batch_size=1)
+        CUR_DIR + "/MLs/models/bnet/face_model",custom_objects={'circle_loss_fixed': CircleLoss()})
 
-    x_index, y_index = Wave.split_xy(index_ds)
-
-    model.reset_index()
-    model.index(x_index, y_index, data=x_index)
+    model.load_index(CUR_DIR + '/MLs/models/bnet/index')

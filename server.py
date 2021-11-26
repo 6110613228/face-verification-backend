@@ -27,6 +27,11 @@ async def main():
     return {"message": "Hello World"}
 
 
+@app.post("/resgis")
+def regis():
+    return {"regis": "success"}
+
+
 @app.websocket("/ws/{option}")
 async def websocket_endpoint(websocket: WebSocket):
 
