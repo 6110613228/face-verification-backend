@@ -32,7 +32,7 @@ def regis():
     return {"regis": "success"}
 
 
-@app.websocket("/ws/{option}")
+@app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
 
     model = models['wave']
@@ -41,7 +41,6 @@ async def websocket_endpoint(websocket: WebSocket):
     while True:
         try:
             data = await websocket.receive_bytes()
-            option = websocket.path_params['option']
 
             nparr = np.frombuffer(data, np.uint8)
             image = cv.imdecode(nparr, 1)
