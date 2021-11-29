@@ -1,5 +1,6 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 import cv2 as cv
 import numpy as np
@@ -27,9 +28,11 @@ async def main():
     return {"message": "Hello World"}
 
 
-@app.post("/resgis")
+@app.post("/regis")
 def regis():
-    return {"regis": "success"}
+    return {"result": "True",
+            "message": "Registation success"
+    }
 
 
 @app.websocket("/ws/{option}")
