@@ -38,7 +38,7 @@ def regis():
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
 
-    model = models['wave']
+    model = models['m']
 
     await websocket.accept()
     while True:
@@ -67,5 +67,4 @@ async def websocket_endpoint(websocket: WebSocket):
 
         except WebSocketDisconnect:
             await websocket.close()
-            print('Closed connection')
             break
