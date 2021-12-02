@@ -38,13 +38,13 @@ async def main():
 @app.post("/register")
 async def regis(image: UploadFile = File(...), video: UploadFile = File(...), label: str = ""):
 
+    #-- save file -- 
     with open("destination.mp4", "wb") as buffer:
         shutil.copyfileobj(video.file, buffer)
 
     with open("image.png", "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
-
-    print(image, video, label)
+    #-- save file -- 
 
     return {
         "result": "True",
