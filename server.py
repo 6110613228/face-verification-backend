@@ -1,13 +1,19 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+
+import time
+import shutil
+from pydantic import BaseModel
 
 import cv2 as cv
 import numpy as np
 
-from feature_utils import face_utils
-from MLs.Model_Controller import models
 
+from feature_utils import face_utils
+#from MLs.Model_Controller import models
+
+# test run command:  uvicorn server:app --reload
 app = FastAPI()
 
 origins = [
@@ -25,20 +31,31 @@ app.add_middleware(
 
 @app.get("/")
 async def main():
-    return {"message": "Hello World"}
+
+    return {"hello": "Hello world"}
 
 
-@app.post("/regis")
-def regis():
-    return {"result": "True",
-            "message": "Registation success"
+@app.post("/register")
+async def regis(image: UploadFile = File(...), video: UploadFile = File(...), label: str = ""):
+
+    with open("destination.mp4", "wb") as buffer:
+        shutil.copyfileobj(video.file, buffer)
+
+    with open("image.png", "wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
+
+    print(image, video, label)
+
+    return {
+        "result": "True",
+        "message": "Registation success"
     }
 
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
 
-    model = models['m']
+    #model = models['m']
 
     await websocket.accept()
     while True:
