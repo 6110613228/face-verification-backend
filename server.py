@@ -1,11 +1,11 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
 import time
 import shutil
 from pydantic import BaseModel
-
+import os
 import cv2 as cv
 import numpy as np
 
@@ -36,15 +36,16 @@ async def main():
 
 
 @app.post("/register")
-async def regis(image: UploadFile = File(...), video: UploadFile = File(...), label: str = ""):
+async def regis(image: UploadFile = File(...), video: UploadFile = File(...), label: str = Form(...)):
 
-    #-- save file -- 
-    with open("destination.mp4", "wb") as buffer:
+    # -- gen file path --
+    video_path, image_path = gen_file_path(label)
+
+    # -- save file --
+    with open(video_path, "wb") as buffer:
         shutil.copyfileobj(video.file, buffer)
-
-    with open("image.png", "wb") as buffer:
+    with open(image_path, "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
-    #-- save file -- 
 
     return {
         "result": "True",
@@ -85,3 +86,20 @@ async def websocket_endpoint(websocket: WebSocket):
         except WebSocketDisconnect:
             await websocket.close()
             break
+
+
+def gen_file_path(label):
+    raw_data = "raw_data/"
+    video_pathDir = raw_data+label+"/"
+    image_pathDir = raw_data+label+"/"
+    try:
+        os.makedirs(video_pathDir)
+    except FileExistsError:
+        # directory already exists
+        pass
+    try:
+        os.makedirs(image_pathDir)
+    except FileExistsError:
+        # directory already exists
+        pass
+    return video_pathDir+"video_"+label+".mp4", image_pathDir+"image_"+label+".png"
