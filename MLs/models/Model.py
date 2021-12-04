@@ -4,18 +4,22 @@ from abc import ABC, abstractmethod
 class Skel(ABC):
 
     @abstractmethod
-    def face_verification(image) -> bool:
+    def face_verification(images) -> bool:
         """
-        @param array of 2 images\n
+        @param Array of `EXACT` 2 images\n
         @return\n
-            1. result 
+            1. Boolean
                 - true indicate that they are the same person
                 - false indicate that ther are NOT the same person
         """
         pass
 
     @abstractmethod
-    def face_recognition(image: list) -> list:
+    def face_recognition(images: list) -> list:
+        """
+        @param Array of images\n
+        @return Array of recognized classe(s) `in order` to each image in input's array
+        """
         pass
 
     @abstractmethod
