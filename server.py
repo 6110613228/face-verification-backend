@@ -94,7 +94,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 result_classes = model.face_recognition(cropped_images)
 
                 for i, f in enumerate(faces_bb):
-                    f['lable'] = result_classes[i]
+                    f['label'] = result_classes[i]
 
             # Face verification
             if (count_found_faces == 2):

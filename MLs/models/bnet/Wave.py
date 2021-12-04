@@ -33,8 +33,8 @@ class Wave(Skel):
     def face_registration():
         pass
 
-    def face_recognition(images: list) -> list:
-        return super().face_recognition()
+    def face_recognition(self,images: list) -> list:
+        return ['class' for x in images]
 
     def get_classes_name(self, path):
         for i, y in enumerate(os.walk(path)):
