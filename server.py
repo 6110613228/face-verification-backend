@@ -157,6 +157,7 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
         results = face_detector.detect_faces(frame_rgb)
         if n == n_sample:
             capture = False
+            break
         if capture:
 
             if len(results) == 2:
@@ -167,15 +168,15 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
                     face2 = capture_face(results[1], frame)
                     print("i'm in")
                     try:
-                        os.makedirs(os.getcwd() + f"/{label_id}/face_only")
-                        os.makedirs(os.getcwd() + f"/{label_id}/id_only")
+                        os.makedirs(os.getcwd() + f"/face_capture/{label_id}/face_only")
+                        os.makedirs(os.getcwd() + f"/face_capture/{label_id}/id_only")
                     except OSError:
                         print("Folder already exists. continue ...")
 
                     cv.imwrite(
-                        os.getcwd() + f"/{label_id}/face_only/{label_id}-face_sample{n+1}.jpg", face1)
+                        os.getcwd() + f"/face_capture/{label_id}/face_only/{label_id}-face_sample{n+1}.jpg", face1)
                     cv.imwrite(
-                        os.getcwd() + f"/{label_id}/id_only/{label_id}-id_sample{n+1}.jpg", face2)
+                        os.getcwd() + f"/face_capture/{label_id}/id_only/{label_id}-id_sample{n+1}.jpg", face2)
 
                     print(f"Save sample{n+1}")
                     n += 1
@@ -184,7 +185,7 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
     response = n != 0
     vc.release()
     out.release()
-    s = os.getcwd() + f"/{label_id}/id_only/"
+    s = os.getcwd() + f"/face_capture/{label_id}/id_only/"
     return response, s
 
 
