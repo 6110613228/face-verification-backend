@@ -30,11 +30,39 @@ class Wave(Skel):
         else:
             return False
 
-    def face_registration():
-        pass
+    def face_registration(self):
+        model = load_model.model
+        index_ds = tf.keras.preprocessing.image_dataset_from_directory(
+                CUR_DIR+"/MLs/models/bnet/database",
+                shuffle = True,
+                labels='inferred',
+                label_mode='int',
+                image_size=(224,224),
+                color_mode = 'rgb',
+                batch_size=1)
 
+        x_index,y_index = self.split_xy(index_ds)
+
+        
+        model.reset_index()
+        model.index(x_index,y_index,data = x_index)
+        model.save_index(CUR_DIR + '/MLs/models/face_model/index')
+
+        return True
+    
     def face_recognition(self,images: list) -> list:
-        return ['class' for x in images]
+        model = load_model.model
+
+        class_names = self.get_classes_name(CUR_DIR+"/MLs/models/bnet/database")
+        class_names.append("Unknown")
+
+        labels = []
+        for img in images:
+            img = cv.resize(img, (224, 224), interpolation = cv.INTER_AREA)
+            label = self.find_face(model,class_names,img)
+            labels.append(label)
+
+        return labels
 
     def get_classes_name(self, path):
         for i, y in enumerate(os.walk(path)):
@@ -50,9 +78,20 @@ class Wave(Skel):
         else:
             return classes[len(classes) - 1]
 
+    def split_xy(data_set) :
+        #loop batch
+        images = list()
+        labels = list()
+        for img_batch,label_batch in data_set :
+            for i in range(len(img_batch)) :
+                images.append(img_batch[i].numpy().astype("uint8"))
+                labels.append(label_batch[i].numpy().astype("uint8"))
+        images = np.array(images)
+        labels = np.array(labels)
+        return images.squeeze(),labels.reshape(-1)
 
 class load_model():
     model = tf.keras.models.load_model(
         CUR_DIR + "/MLs/models/bnet/face_model",custom_objects={'circle_loss_fixed': CircleLoss()})
 
-    model.load_index(CUR_DIR + '/MLs/models/bnet/index')
+    model.load_index(CUR_DIR + '/MLs/models/face_model/index')
