@@ -34,8 +34,8 @@ def detect_face(image):
 
 def crop_face(image, bounding_box):
     """
-    @param image openCV image object
-    @param bounding_box array of bounding box of faces inside image
+    @param image openCV: image object
+    @param bounding_box: Array of bounding box of faces inside image
 
     @return array of cropped image
     """
