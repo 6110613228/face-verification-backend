@@ -31,7 +31,9 @@ class Wave(Skel):
             return False
 
     def face_registration(self):
+
         model = load_model.model
+
         index_ds = tf.keras.preprocessing.image_dataset_from_directory(
                 CUR_DIR+"/MLs/models/bnet/database",
                 shuffle = True,
@@ -42,15 +44,15 @@ class Wave(Skel):
                 batch_size=1)
 
         x_index,y_index = self.split_xy(index_ds)
-
         
         model.reset_index()
         model.index(x_index,y_index,data = x_index)
-        model.save_index(CUR_DIR + '/MLs/models/face_model/index')
+        model.save_index(CUR_DIR + '/MLs/models/bnet/face_model_imgnet')
 
         return True
     
     def face_recognition(self,images: list) -> list:
+        
         model = load_model.model
 
         class_names = self.get_classes_name(CUR_DIR+"/MLs/models/bnet/database")
@@ -58,8 +60,11 @@ class Wave(Skel):
 
         labels = []
         for img in images:
-            img = cv.resize(img, (224, 224), interpolation = cv.INTER_AREA)
-            label = self.find_face(model,class_names,img)
+            try:
+                img = cv.resize(img, (224, 224), interpolation = cv.INTER_AREA)
+                label = self.find_face(model,class_names,img)
+            except:
+                label = "Not found"
             labels.append(label)
 
         return labels
@@ -69,16 +74,17 @@ class Wave(Skel):
             subdirs, dirs, files = y
             if i == 0:
                 return dirs
-
-    def find_face(self, model, classes, face, th=0.0982):
+    # 0.0982 0.1383 0.108
+    def find_face(self, model, classes, face, th=0.22):
         found = model.single_lookup(face, k=1)
         # Find Nearest with distance threshold
+    
         if found[0].distance < th:
             return classes[found[0].label]
         else:
             return classes[len(classes) - 1]
 
-    def split_xy(data_set) :
+    def split_xy(self,data_set) :
         #loop batch
         images = list()
         labels = list()
@@ -94,4 +100,4 @@ class load_model():
     model = tf.keras.models.load_model(
         CUR_DIR + "/MLs/models/bnet/face_model",custom_objects={'circle_loss_fixed': CircleLoss()})
 
-    model.load_index(CUR_DIR + '/MLs/models/face_model/index')
+    model.load_index(CUR_DIR + '\\MLs\\models\\bnet\\face_model_imgnet')

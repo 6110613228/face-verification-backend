@@ -1,11 +1,11 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 import shutil
 
 import os
 import cv2 as cv
 import numpy as np
-
+import tensorflow as tf
 
 from feature_utils import face_utils
 from MLs.Model_Controller import models
@@ -29,7 +29,7 @@ model = models['wave']
 face_detector = face_utils.load_mtcnn.mtcnn
 
 SAVE_DIR = os.getcwd() + '/MLs/models/bnet/database/'
-
+model.face_registration()
 
 @app.get("/")
 async def main():
@@ -38,7 +38,7 @@ async def main():
 
 
 @app.post("/register")
-async def regis(image: UploadFile = File(...), video: UploadFile = File(...), label: str = Form(...)):
+async def regis(image: UploadFile = File(...), video: UploadFile = File(...), label: str = Form(...) ):
 
     main_dir = os.getcwd()+'/raw_data/'
     # -- gen file path --
@@ -51,7 +51,7 @@ async def regis(image: UploadFile = File(...), video: UploadFile = File(...), la
         shutil.copyfileobj(image.file, buffer)
 
     res_vid, id_path, face_path = detect_from_vid(vid_path=video_path, saveas="test_face2_60.avi",
-                                                  n_sample=5, fps=60, capture=True, label_id=label)
+                                                  n_sample=20, fps=30, capture=True, label_id=label)
     print(imgID_path)
     print(id_path)
 
@@ -66,9 +66,9 @@ async def regis(image: UploadFile = File(...), video: UploadFile = File(...), la
         message = "We can't detect face from your image"
     else:
         message = "We can't detect face from your video and image"
-
+    
     model.face_registration()
-
+    
     return {
         "result": res_pic and res_vid,
         "message": message
@@ -85,7 +85,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
             nparr = np.frombuffer(data, np.uint8)
             image = cv.imdecode(nparr, 1)
-
             faces_bb = face_utils.detect_face(image)
             cropped_images = face_utils.crop_face(image, faces_bb)
 
@@ -94,13 +93,15 @@ async def websocket_endpoint(websocket: WebSocket):
             # Face recognition
             if (count_found_faces > 0):
                 result_classes = model.face_recognition(cropped_images)
-
                 for i, f in enumerate(faces_bb):
                     f['label'] = result_classes[i]
 
             # Face verification
             if (count_found_faces == 2):
-                result = model.face_verification(cropped_images)
+                try:
+                    result = model.face_verification(cropped_images)
+                except:
+                    result=False 
             else:
                 result = False
             #img_str = cv.imencode('.png', image)[1].tobytes()
@@ -135,11 +136,13 @@ def gen_file_path(label):
     return video_pathDir+"video_"+label+".avi", imgID_pathDir+"image_"+label+".png"
 
 
-def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30, n_sample: int = 5, capture: bool = False):
+def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30, n_sample: int = 10, capture: bool = False):
 
     vc = cv.VideoCapture(vid_path)
     frame_width = int(vc.get(3))
     frame_height = int(vc.get(4))
+    fps = int(vc.get(cv.CAP_PROP_FPS))
+    print("vid fps:",fps)
     n = 0
     try:
         os.makedirs(SAVE_DIR)
@@ -147,8 +150,7 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
         print("Folder already exists. continue ...")
 
     print(f"Processing from {vid_path}")
-    out = cv.VideoWriter(saveas, cv.VideoWriter_fourcc(
-        'M', 'J', 'P', 'G'), fps, (frame_width, frame_height))
+    
     while vc.isOpened():
         ret, frame = vc.read()
         cur_frame = vc.get(1)
@@ -165,10 +167,9 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
             if len(results) == 2:
                 conf1 = results[0]['confidence']
                 conf2 = results[1]['confidence']
-                if ((conf1 > conf_t) and (conf2 > conf_t)):  # 3 Frame interval
+                if ((conf1 > conf_t) and (conf2 > conf_t)) and ((cur_frame % 5) == 0) :  # 3 Frame interval
                     face1 = capture_face(results[0], frame)
                     face2 = capture_face(results[1], frame)
-                    print("i'm in")
                     try:
                         os.makedirs(
                             SAVE_DIR + f"{label_id}/face_only")
@@ -179,8 +180,16 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
 
                     cv.imwrite(
                         SAVE_DIR + f"{label_id}/face_only/{label_id}-face_sample{n+1}.jpg", face1)
+                    augment = tf.image.flip_left_right(face1)
+                    
+                    cv.imwrite(
+                        SAVE_DIR + f"{label_id}/face_only/{label_id}-face_sample{n+1}_aug.jpg", augment.numpy())
                     cv.imwrite(
                         SAVE_DIR + f"{label_id}/id_only/{label_id}-id_sample{n+1}.jpg", face2)
+
+                    augment = tf.image.flip_left_right(face2)
+                    cv.imwrite(
+                        SAVE_DIR + f"{label_id}/id_only/{label_id}-id_sample{n+1}_aug.jpg", augment.numpy())
 
                     print(f"Save sample{n+1}")
                     n += 1
@@ -188,7 +197,6 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
     print("\nDone processing")
     response = n != 0
     vc.release()
-    out.release()
     id_path = SAVE_DIR + f"{label_id}/id_only/"
     face_path = SAVE_DIR + f"{label_id}/face_only/"
     return response, id_path, face_path
