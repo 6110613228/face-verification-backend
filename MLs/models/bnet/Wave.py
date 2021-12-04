@@ -12,18 +12,18 @@ CUR_DIR = os.getcwd()
 
 class Wave(Skel):
 
-    def face_verification(self, image):
+    def face_verification(self, images):
 
         model = load_model.model
 
         class_names = self.get_classes_name(CUR_DIR+"/MLs/models/bnet/database")
         class_names.append("Unknown")
 
-        image[0] = cv.resize(image[0], (224, 224), interpolation = cv.INTER_AREA)
-        image[1] = cv.resize(image[1], (224, 224), interpolation = cv.INTER_AREA)
+        images[0] = cv.resize(images[0], (224, 224), interpolation = cv.INTER_AREA)
+        images[1] = cv.resize(images[1], (224, 224), interpolation = cv.INTER_AREA)
 
-        label1 = self.find_face(model, class_names, image[0])
-        label2 = self.find_face(model, class_names, image[1])
+        label1 = self.find_face(model, class_names, images[0])
+        label2 = self.find_face(model, class_names, images[1])
 
         if (label1 == label2) and ((label1 != class_names[-1]) or (label2 != class_names[-1])):
             return True
@@ -33,7 +33,7 @@ class Wave(Skel):
     def face_registration():
         pass
 
-    def face_recognition(image: list) -> list:
+    def face_recognition(images: list) -> list:
         return super().face_recognition()
 
     def get_classes_name(self, path):
