@@ -25,7 +25,7 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-model = models['m']
+model = models['wave']
 face_detector = face_utils.load_mtcnn.mtcnn
 
 SAVE_DIR = os.getcwd() + '/face_capture'
