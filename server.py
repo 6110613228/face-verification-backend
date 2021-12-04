@@ -1,8 +1,5 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
-from mtcnn import MTCNN
-import time
 import shutil
 
 import os
@@ -15,7 +12,6 @@ from MLs.Model_Controller import models
 
 # test run command:  uvicorn server:app --reload
 app = FastAPI()
-SAVE_DIR = os.getcwd() + '/face_capture'
 
 origins = [
     '*'
@@ -29,7 +25,10 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-face_detector = MTCNN()
+model = models['m']
+face_detector = face_utils.load_mtcnn.mtcnn
+
+SAVE_DIR = os.getcwd() + '/face_capture'
 
 
 @app.get("/")
@@ -41,8 +40,6 @@ async def main():
 @app.post("/register")
 async def regis(image: UploadFile = File(...), video: UploadFile = File(...), label: str = Form(...)):
 
-    
-
     main_dir = os.getcwd()+'/raw_data/'
     # -- gen file path --
     video_path, imgID_path = gen_file_path(label)
@@ -53,16 +50,17 @@ async def regis(image: UploadFile = File(...), video: UploadFile = File(...), la
     with open(imgID_path, "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
 
-    res_vid,id_path = detect_from_vid(vid_path=video_path, saveas="test_face2_60.avi",
-                    n_sample=5, fps=60, capture=True, label_id=label)
+    res_vid, id_path = detect_from_vid(vid_path=video_path, saveas="test_face2_60.avi",
+                                       n_sample=5, fps=60, capture=True, label_id=label)
     print(imgID_path)
     print(id_path)
-   
-    res_pic=detect_img_from_file(filename=imgID_path, des_path=id_path, conf_t=0.95,label=label)
-    
+
+    res_pic = detect_img_from_file(
+        filename=imgID_path, des_path=id_path, conf_t=0.95, label=label)
+
     if res_pic and res_vid:
         message = "Registation success"
-    elif res_pic :
+    elif res_pic:
         message = "video unsuccess"
     elif res_vid:
         message = "image unsuccess"
@@ -77,8 +75,6 @@ async def regis(image: UploadFile = File(...), video: UploadFile = File(...), la
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-
-    model = models['m']
 
     await websocket.accept()
     while True:
@@ -114,7 +110,7 @@ def gen_file_path(label):
     raw_data = "raw_data/"
     video_pathDir = raw_data+label+"/"
     imgID_pathDir = os.getcwd()+'/'+raw_data+label+"/"
-    
+
     # raw_data/label/face_detected/pic.png --format--
     try:
         os.makedirs(video_pathDir)
@@ -130,7 +126,7 @@ def gen_file_path(label):
 
 
 def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30, n_sample: int = 5, capture: bool = False):
-  
+
     vc = cv.VideoCapture(vid_path)
     frame_width = int(vc.get(3))
     frame_height = int(vc.get(4))
@@ -154,7 +150,7 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
         if n == n_sample:
             capture = False
         if capture:
-            
+
             if len(results) == 2:
                 conf1 = results[0]['confidence']
                 conf2 = results[1]['confidence']
@@ -177,11 +173,11 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
                     n += 1
 
     print("\nDone processing")
-    response = n!=0
+    response = n != 0
     vc.release()
     out.release()
     s = os.getcwd() + f"/{label_id}/id_only/"
-    return response,s
+    return response, s
 
 
 def capture_face(res, frame):
@@ -207,7 +203,7 @@ def bounding_box(res, frame):
     return frame
 
 
-def detect_img_from_file(filename, des_path, conf_t=0.9999,label="x"):
+def detect_img_from_file(filename, des_path, conf_t=0.9999, label="x"):
     count_all = 0
     count_detected = 0
     count_undetected = 0
@@ -215,14 +211,13 @@ def detect_img_from_file(filename, des_path, conf_t=0.9999,label="x"):
         os.makedirs(des_path)
     except OSError:
         print("Folder already exists. continue ...")
-    
+
     img = cv.imread(filename)
-      
 
     count_all += 1
     results = face_detector.detect_faces(
-    cv.cvtColor(img, cv.COLOR_BGR2RGB))
-        # print(filenames[i],results)
+        cv.cvtColor(img, cv.COLOR_BGR2RGB))
+    # print(filenames[i],results)
 
     if len(results) > 0:
         cond = 1  # If found
@@ -248,5 +243,3 @@ def detect_img_from_file(filename, des_path, conf_t=0.9999,label="x"):
         print("NOT Detected")
         count_undetected += 1
         return False
-
-   
