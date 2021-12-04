@@ -15,6 +15,10 @@ class Skel(ABC):
         pass
 
     @abstractmethod
+    def face_recognition(image: list) -> list:
+        pass
+
+    @abstractmethod
     def face_registration():
         pass
 
