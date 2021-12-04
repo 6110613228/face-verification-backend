@@ -25,6 +25,10 @@ def detect_face(image):
 
         face['box'] = [x * 2 for x in face['box']]
 
+        face['box'][0] = face['box'][0] - 10
+        face['box'][1] = face['box'][1] - 10
+        face['box'][2] = face['box'][2] + 10
+        face['box'][3] = face['box'][3] + 10
     return result
 
 
