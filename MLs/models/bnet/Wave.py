@@ -30,9 +30,26 @@ class Wave(Skel):
         else:
             return False
 
-    def face_registration():
-        pass
+    def face_registration(self):
+        model = load_model.model
+        index_ds = tf.keras.preprocessing.image_dataset_from_directory(
+                CUR_DIR+"/MLs/models/bnet/database",
+                shuffle = True,
+                labels='inferred',
+                label_mode='int',
+                image_size=(224,224),
+                color_mode = 'rgb',
+                batch_size=1)
 
+        x_index,y_index = self.split_xy(index_ds)
+
+        
+        model.reset_index()
+        model.index(x_index,y_index,data = x_index)
+        model.save_index(CUR_DIR + '/MLs/models/face_model/index')
+
+        return True
+    
     def face_recognition(self,images: list) -> list:
         model = load_model.model
 
@@ -61,6 +78,17 @@ class Wave(Skel):
         else:
             return classes[len(classes) - 1]
 
+    def split_xy(data_set) :
+        #loop batch
+        images = list()
+        labels = list()
+        for img_batch,label_batch in data_set :
+            for i in range(len(img_batch)) :
+                images.append(img_batch[i].numpy().astype("uint8"))
+                labels.append(label_batch[i].numpy().astype("uint8"))
+        images = np.array(images)
+        labels = np.array(labels)
+        return images.squeeze(),labels.reshape(-1)
 
 class load_model():
     model = tf.keras.models.load_model(
