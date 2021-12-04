@@ -50,7 +50,9 @@ class Wave(Skel):
 
         model.reset_index()
         model.index(x_index, y_index, data=x_index)
-        model.save_index(CUR_DIR + '/MLs/models/bnet/face_model_imgnet')
+        model.save_index(CUR_DIR + '/MLs/models/bnet/face_model')
+
+        load_model.reload_model(self)
 
         return True
 
@@ -106,7 +108,7 @@ class load_model():
     model = tf.keras.models.load_model(
         CUR_DIR + "/MLs/models/bnet/face_model", custom_objects={'circle_loss_fixed': CircleLoss()})
 
-    model.load_index(CUR_DIR + '\\MLs\\models\\bnet\\face_model_imgnet')
+    model.load_index(CUR_DIR + '\\MLs\\models\\bnet\\face_model')
 
     def reload_model(self):
         self.model = tf.keras.models.load_model(
