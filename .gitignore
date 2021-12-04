@@ -4,8 +4,9 @@
 # database
 database
 
-# facemodel
+# model
 face_model
+index
 
 .idea
 .ipynb_checkpoints
