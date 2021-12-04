@@ -89,6 +89,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
             count_found_faces = len(cropped_images)
 
+            # Face recognition
+            if (count_found_faces > 0):
+                result_classes = model.face_recognition(cropped_images)
+
+                for i, f in enumerate(faces_bb):
+                    f['lable'] = result_classes[i]
+
+            # Face verification
             if (count_found_faces == 2):
                 result = model.face_verification(cropped_images)
             else:
@@ -97,7 +105,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
             await websocket.send_json({
                 'count_face': count_found_faces,
-                'found_faces_bb': faces_bb,
+                'found_faces': faces_bb,
                 'is_same_person': result
             })
 
