@@ -34,7 +34,18 @@ class Wave(Skel):
         pass
 
     def face_recognition(self,images: list) -> list:
-        return ['class' for x in images]
+        model = load_model.model
+
+        class_names = self.get_classes_name(CUR_DIR+"/MLs/models/bnet/database")
+        class_names.append("Unknown")
+
+        labels = []
+        for img in images:
+            img = cv.resize(img, (224, 224), interpolation = cv.INTER_AREA)
+            label = self.find_face(model,class_names,img)
+            labels.append(label)
+
+        return labels
 
     def get_classes_name(self, path):
         for i, y in enumerate(os.walk(path)):
@@ -55,4 +66,4 @@ class load_model():
     model = tf.keras.models.load_model(
         CUR_DIR + "/MLs/models/bnet/face_model",custom_objects={'circle_loss_fixed': CircleLoss()})
 
-    model.load_index(CUR_DIR + '/MLs/models/bnet/index')
+    model.load_index(CUR_DIR + '/MLs/models/face_model/index')
