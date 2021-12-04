@@ -9,7 +9,7 @@ def detect_face(image):
     """
     face_detector = load_mtcnn.mtcnn
 
-    downsize = 2
+    downsize = 1
 
     image_width = image.shape[1]
     image_height = image.shape[0]
@@ -23,12 +23,12 @@ def detect_face(image):
         del face['confidence']
         del face['keypoints']
 
-        face['box'] = [x * 2 for x in face['box']]
+        face['box'] = [x * downsize for x in face['box']]
 
-        face['box'][0] = face['box'][0] - 10
-        face['box'][1] = face['box'][1] - 10
-        face['box'][2] = face['box'][2] + 10
-        face['box'][3] = face['box'][3] + 10
+        face['box'][0] = face['box'][0] - 20
+        face['box'][1] = face['box'][1] - 20
+        face['box'][2] = face['box'][2] + 40
+        face['box'][3] = face['box'][3] + 40
     return result
 
 
