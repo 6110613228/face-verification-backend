@@ -28,7 +28,7 @@ app.add_middleware(
 model = models['wave']
 face_detector = face_utils.load_mtcnn.mtcnn
 
-SAVE_DIR = os.getcwd() + '/face_capture'
+SAVE_DIR = os.getcwd() + '/MLs/models/bnet/database/'
 
 
 @app.get("/")
@@ -50,22 +50,24 @@ async def regis(image: UploadFile = File(...), video: UploadFile = File(...), la
     with open(imgID_path, "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
 
-    res_vid, id_path = detect_from_vid(vid_path=video_path, saveas="test_face2_60.avi",
-                                       n_sample=5, fps=60, capture=True, label_id=label)
+    res_vid, id_path, face_path = detect_from_vid(vid_path=video_path, saveas="test_face2_60.avi",
+                                                  n_sample=5, fps=60, capture=True, label_id=label)
     print(imgID_path)
     print(id_path)
 
     res_pic = detect_img_from_file(
         filename=imgID_path, des_path=id_path, conf_t=0.95, label=label)
-
+    
     if res_pic and res_vid:
-        message = "Registation success"
+        message = "Registration success"
     elif res_pic:
-        message = "video unsuccess"
+        message = "We can't detect face from your video"
     elif res_vid:
-        message = "image unsuccess"
+        message = "We can't detect face from your image"
     else:
-        message = "video and image unsuccess"
+        message = "We can't detect face from your video and image"
+
+    model.face_registration()
 
     return {
         "result": res_pic and res_vid,
@@ -168,15 +170,17 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
                     face2 = capture_face(results[1], frame)
                     print("i'm in")
                     try:
-                        os.makedirs(os.getcwd() + f"/face_capture/{label_id}/face_only")
-                        os.makedirs(os.getcwd() + f"/face_capture/{label_id}/id_only")
+                        os.makedirs(
+                            SAVE_DIR + f"{label_id}/face_only")
+                        os.makedirs(
+                            SAVE_DIR + f"{label_id}/id_only")
                     except OSError:
                         print("Folder already exists. continue ...")
 
                     cv.imwrite(
-                        os.getcwd() + f"/face_capture/{label_id}/face_only/{label_id}-face_sample{n+1}.jpg", face1)
+                        SAVE_DIR + f"{label_id}/face_only/{label_id}-face_sample{n+1}.jpg", face1)
                     cv.imwrite(
-                        os.getcwd() + f"/face_capture/{label_id}/id_only/{label_id}-id_sample{n+1}.jpg", face2)
+                        SAVE_DIR + f"{label_id}/id_only/{label_id}-id_sample{n+1}.jpg", face2)
 
                     print(f"Save sample{n+1}")
                     n += 1
@@ -185,8 +189,9 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
     response = n != 0
     vc.release()
     out.release()
-    s = os.getcwd() + f"/face_capture/{label_id}/id_only/"
-    return response, s
+    id_path = SAVE_DIR + f"{label_id}/id_only/"
+    face_path = SAVE_DIR + f"{label_id}/face_only/"
+    return response, id_path, face_path
 
 
 def capture_face(res, frame):
