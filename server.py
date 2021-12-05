@@ -51,7 +51,7 @@ async def regis(image: UploadFile = File(...), video: UploadFile = File(...), la
         shutil.copyfileobj(image.file, buffer)
 
     res_vid, id_path, face_path = detect_from_vid(vid_path=video_path, saveas="test_face2_60.avi",
-                                                  n_sample=20, fps=30, capture=True, label_id=label)
+                                                  n_sample=30, fps=30, capture=True, label_id=label)
     print(imgID_path)
     print(id_path)
 
@@ -86,10 +86,12 @@ async def websocket_endpoint(websocket: WebSocket):
             nparr = np.frombuffer(data, np.uint8)
             image = cv.imdecode(nparr, 1)
             image = cv.cvtColor(image,cv.COLOR_BGR2RGB)
+
             faces_bb = face_utils.detect_face(image)
             cropped_images = face_utils.crop_face(image, faces_bb)
             count_found_faces = len(cropped_images)
-
+            # for i,img in enumerate(cropped_images) :
+            #     cv.imwrite(f"test_img{i}.jpg",img)
             # Face recognition
             if (count_found_faces > 0):
                 result_classes = model.face_recognition(cropped_images)
@@ -136,7 +138,7 @@ def gen_file_path(label):
     return video_pathDir+"video_"+label+".avi", imgID_pathDir+"image_"+label+".png"
 
 
-def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30, n_sample: int = 10, capture: bool = False):
+def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.85, fps: int = 30, n_sample: int = 10, capture: bool = False):
 
     vc = cv.VideoCapture(vid_path)
     # frame_width = int(vc.get(3))
