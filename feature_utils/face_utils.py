@@ -25,10 +25,10 @@ def detect_face(image):
 
         face['box'] = [x * downsize for x in face['box']]
 
-        face['box'][0] = face['box'][0] - 20
-        face['box'][1] = face['box'][1] - 20
-        face['box'][2] = face['box'][2] + 40
-        face['box'][3] = face['box'][3] + 40
+        # face['box'][0] = face['box'][0] - 20
+        # face['box'][1] = face['box'][1] - 20
+        # face['box'][2] = face['box'][2] + 40
+        # face['box'][3] = face['box'][3] + 40
     return result
 
 

@@ -85,9 +85,9 @@ async def websocket_endpoint(websocket: WebSocket):
 
             nparr = np.frombuffer(data, np.uint8)
             image = cv.imdecode(nparr, 1)
+            image = cv.cvtColor(image,cv.COLOR_BGR2RGB)
             faces_bb = face_utils.detect_face(image)
             cropped_images = face_utils.crop_face(image, faces_bb)
-
             count_found_faces = len(cropped_images)
 
             # Face recognition
