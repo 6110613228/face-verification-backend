@@ -139,8 +139,8 @@ def gen_file_path(label):
 def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30, n_sample: int = 10, capture: bool = False):
 
     vc = cv.VideoCapture(vid_path)
-    frame_width = int(vc.get(3))
-    frame_height = int(vc.get(4))
+    # frame_width = int(vc.get(3))
+    # frame_height = int(vc.get(4))
     fps = int(vc.get(cv.CAP_PROP_FPS))
     print("vid fps:",fps)
     n = 0
@@ -150,49 +150,45 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.95, fps: int = 30,
         print("Folder already exists. continue ...")
 
     print(f"Processing from {vid_path}")
-    
-    while vc.isOpened():
-        ret, frame = vc.read()
-        cur_frame = vc.get(1)
-        print("*", end="")
-        if not ret:
-            break
-        frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-        results = face_detector.detect_faces(frame_rgb)
-        if n == n_sample:
-            capture = False
-            break
-        if capture:
+    i = 0
+    while True:
+        
+        ret = vc.grab()
+        if i % 5 == 0:
+            ret, frame = vc.retrieve()
+            print("*", end="")
+            if not ret:
+                break
+            frame_rgb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+            results = face_detector.detect_faces(frame_rgb)
+            if n == n_sample:
+                capture = False
+                break
+            if capture:
 
-            if len(results) == 2:
-                conf1 = results[0]['confidence']
-                conf2 = results[1]['confidence']
-                if ((conf1 > conf_t) and (conf2 > conf_t)) and ((cur_frame % 5) == 0) :  # 3 Frame interval
-                    face1 = capture_face(results[0], frame)
-                    face2 = capture_face(results[1], frame)
-                    try:
-                        os.makedirs(
-                            SAVE_DIR + f"{label_id}/face_only")
-                        os.makedirs(
-                            SAVE_DIR + f"{label_id}/id_only")
-                    except OSError:
-                        print("Folder already exists. continue ...")
+                if len(results) == 2:
+                    conf1 = results[0]['confidence']
+                    conf2 = results[1]['confidence']
+                    if ((conf1 > conf_t) and (conf2 > conf_t)) :  # 3 Frame interval
+                        face1 = capture_face(results[0], frame)
+                        face2 = capture_face(results[1], frame)
+                        try:
+                            os.makedirs(
+                                SAVE_DIR + f"{label_id}/face_only")
+                            os.makedirs(
+                                SAVE_DIR + f"{label_id}/id_only")
+                        except OSError:
+                            print("Folder already exists. continue ...")
 
-                    cv.imwrite(
-                        SAVE_DIR + f"{label_id}/face_only/{label_id}-face_sample{n+1}.jpg", face1)
-                    augment = tf.image.flip_left_right(face1)
+                        cv.imwrite(
+                            SAVE_DIR + f"{label_id}/face_only/{label_id}-face_sample{n+1}.jpg", face1)
                     
-                    cv.imwrite(
-                        SAVE_DIR + f"{label_id}/face_only/{label_id}-face_sample{n+1}_aug.jpg", augment.numpy())
-                    cv.imwrite(
-                        SAVE_DIR + f"{label_id}/id_only/{label_id}-id_sample{n+1}.jpg", face2)
+                        cv.imwrite(
+                            SAVE_DIR + f"{label_id}/id_only/{label_id}-id_sample{n+1}.jpg", face2)
 
-                    augment = tf.image.flip_left_right(face2)
-                    cv.imwrite(
-                        SAVE_DIR + f"{label_id}/id_only/{label_id}-id_sample{n+1}_aug.jpg", augment.numpy())
-
-                    print(f"Save sample{n+1}")
-                    n += 1
+                        print(f"Save sample{n+1}")
+                        n += 1
+        i+=1
 
     print("\nDone processing")
     response = n != 0

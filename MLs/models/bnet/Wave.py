@@ -52,8 +52,6 @@ class Wave(Skel):
         model.index(x_index, y_index, data=x_index)
         model.save_index(CUR_DIR + '/MLs/models/bnet/face_model')
 
-        load_model.reload_model(self)
-
         return True
 
     def face_recognition(self, images: list) -> list:
