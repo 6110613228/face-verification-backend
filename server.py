@@ -176,27 +176,33 @@ def detect_from_vid(vid_path, label_id, saveas: str, conf_t=0.85, fps: int = 30,
                         face2 = capture_face(results[1], frame)
                         try:
                             os.makedirs(
-                                SAVE_DIR + f"{label_id}/face_only")
+                                SAVE_DIR + f"{label_id}/faceimg_only")
                             os.makedirs(
-                                SAVE_DIR + f"{label_id}/id_only")
+                                SAVE_DIR + f"{label_id}/idimg_only")
                         except OSError:
                             print("Folder already exists. continue ...")
 
                         cv.imwrite(
-                            SAVE_DIR + f"{label_id}/face_only/{label_id}-face_sample{n+1}.jpg", face1)
+                            SAVE_DIR + f"{label_id}/faceimg_only/{label_id}-face_sample{n+1}.jpg", face1)
+
+                        # cv.imwrite(
+                        #     SAVE_DIR + f"{label_id}/faceimg_only/{label_id}-face_sample{n+1}_aug.jpg", tf.image.flip_left_right(face1).numpy())
                     
                         cv.imwrite(
-                            SAVE_DIR + f"{label_id}/id_only/{label_id}-id_sample{n+1}.jpg", face2)
+                            SAVE_DIR + f"{label_id}/idimg_only/{label_id}-id_sample{n+1}.jpg", face2)
+
+                        # cv.imwrite(
+                        #     SAVE_DIR + f"{label_id}/idimg_only/{label_id}-face_sample{n+1}_aug.jpg", tf.image.flip_left_right(face2).numpy())
 
                         print(f"Save sample{n+1}")
                         n += 1
         i+=1
 
     print("\nDone processing")
-    response = n != 0
+    response = n >=7
     vc.release()
-    id_path = SAVE_DIR + f"{label_id}/id_only/"
-    face_path = SAVE_DIR + f"{label_id}/face_only/"
+    id_path = SAVE_DIR + f"{label_id}/idimg_only/"
+    face_path = SAVE_DIR + f"{label_id}/faceimg_only/"
     return response, id_path, face_path
 
 

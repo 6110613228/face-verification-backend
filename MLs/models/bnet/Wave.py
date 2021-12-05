@@ -61,7 +61,6 @@ class Wave(Skel):
         class_names = self.get_classes_name(
             CUR_DIR+"/MLs/models/bnet/database")
         class_names.append("Unknown")
-
         labels = []
         for img in images:
             try:
@@ -82,9 +81,12 @@ class Wave(Skel):
     def find_face(self, model, classes, face, th=0.15):
         found = model.single_lookup(face, k=1)
         # Find Nearest with distance threshold
+        print("dist:",found[0].distance,end ="")
         if found[0].distance < th:
+            print("class:",classes[found[0].label])
             return classes[found[0].label]
         else:
+            print("class:",classes[len(classes) - 1])
             return classes[len(classes) - 1]
 
     def split_xy(self, data_set):
