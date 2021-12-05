@@ -68,7 +68,7 @@ async def regis(image: UploadFile = File(...), video: UploadFile = File(...), la
         message = "We can't detect face from your video and image"
     
     model.face_registration()
-    
+
     return {
         "result": res_pic and res_vid,
         "message": message
