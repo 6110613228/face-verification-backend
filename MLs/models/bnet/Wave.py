@@ -49,15 +49,10 @@ class Wave(Skel):
         x_index, y_index = self.split_xy(index_ds)
 
         model.reset_index()
-<<<<<<< HEAD
-        model.index(x_index,y_index,data = x_index)
-        model.save_index(CUR_DIR + '/MLs/models/bnet/face_model')
-=======
         model.index(x_index, y_index, data=x_index)
         model.save_index(CUR_DIR + '/MLs/models/bnet/face_model')
 
         load_model.reload_model(self)
->>>>>>> refs/remotes/origin/main
 
         return True
 
@@ -86,17 +81,9 @@ class Wave(Skel):
             if i == 0:
                 return dirs
     # 0.0982 0.1383 0.108
-<<<<<<< HEAD
     def find_face(self, model, classes, face, th=0.15):
         found = model.single_lookup(face, k=1)
         # Find Nearest with distance threshold
-=======
-
-    def find_face(self, model, classes, face, th=0.22):
-        found = model.single_lookup(face, k=1)
-        # Find Nearest with distance threshold
-
->>>>>>> refs/remotes/origin/main
         if found[0].distance < th:
             return classes[found[0].label]
         else:
@@ -119,12 +106,8 @@ class load_model():
     model = tf.keras.models.load_model(
         CUR_DIR + "/MLs/models/bnet/face_model", custom_objects={'circle_loss_fixed': CircleLoss()})
 
-<<<<<<< HEAD
-    model.load_index(CUR_DIR + '\\MLs\\models\\bnet\\face_model')
-=======
     model.load_index(CUR_DIR + '\\MLs\\models\\bnet\\face_model')
 
     def reload_model(self):
         self.model = tf.keras.models.load_model(
             CUR_DIR + "/MLs/models/bnet/face_model", custom_objects={'circle_loss_fixed': CircleLoss()})
->>>>>>> refs/remotes/origin/main
