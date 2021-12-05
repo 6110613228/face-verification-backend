@@ -106,8 +106,8 @@ class load_model():
     model = tf.keras.models.load_model(
         CUR_DIR + "/MLs/models/bnet/face_model", custom_objects={'circle_loss_fixed': CircleLoss()})
 
-    model.load_index(CUR_DIR + '\\MLs\\models\\bnet\\face_model')
-
     def reload_model(self):
         self.model = tf.keras.models.load_model(
             CUR_DIR + "/MLs/models/bnet/face_model", custom_objects={'circle_loss_fixed': CircleLoss()})
+
+        self.model.load_index(CUR_DIR + '\\MLs\\models\\bnet\\face_model')
