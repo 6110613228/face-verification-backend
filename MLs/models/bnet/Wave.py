@@ -78,7 +78,7 @@ class Wave(Skel):
             if i == 0:
                 return dirs
     # 0.0982 0.1383 0.108
-    def find_face(self, model, classes, face, th=0.15):
+    def find_face(self, model, classes, face, th=0.14):
         found = model.single_lookup(face, k=1)
         # Find Nearest with distance threshold
         print("dist:",found[0].distance,end ="")
